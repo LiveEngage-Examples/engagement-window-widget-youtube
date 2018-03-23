@@ -1,0 +1,56 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://lpcdn.lpsnmedia.net/unifiedwindow/widgetSDK.min.js"></script>
+</head>
+<body>
+    <div id="youtubediv"></div>
+    <script type="text/javascript">
+        (function () {
+            var youTubeString = "See this video:";
+            var lpWidgetSDK,
+            widgetSDKAPI = lpTag.LPWidgetSDK.API;
+            
+            window.addEventListener("load", function () {
+                var bindingEvent = [widgetSDKAPI.events.CONVERSATION_INFO,
+                widgetSDKAPI.events.MESSAGES],
+                opts = {bind: {}};
+                bindingEvent.forEach(function (eventName) {
+                    opts.bind[eventName] = {func: _onEvent, context: this};
+                });
+                lpWidgetSDK = lpTag.LPWidgetSDK.init(opts);
+            }.bind(this));
+            
+            function _onEvent(eventData) {
+                console.log(eventData);
+                if(eventData.data.content.includes(youTubeString)){
+                    var href = eventData.data.content.match(/href="([^"]*)/)[1];
+                    console.log(href);
+                    href = /=(.+)/.exec(href)[1];
+                    console.log(href);
+                    document.getElementById("youtubediv").innerHTML = '<iframe width="100%" height="100%" src="https://www.youtube.com/embed/'+href+'?autoplay=1"></iframe>'
+                    //window.location.href = href;
+                    sendNotification("Event received!");
+                }   
+            }
+            
+            function sendNotification(text) {
+
+                if (typeof text === "string") {
+                    lpWidgetSDK.notify({content: text}, function (err) {
+                        if (err) {
+                            console.log("Error on sending notification from widget");
+                        }
+                    });
+                }
+            }
+            
+            function disposeWidget() {
+                lpWidgetSDK.dispose(function (data) {
+                    console.log("widget disposed");
+                });
+            }
+            
+        })();
+    </script>
+</body>
